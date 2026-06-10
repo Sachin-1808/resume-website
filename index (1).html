@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Online Application Form</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #0f0e0d; --paper: #faf8f5; --accent: #c84b31; --muted: #7a7570;
+      --rule: #e2ddd8; --green: #2d7d4f; --err: #b91c1c;
+      --ff-display: 'Playfair Display', Georgia, serif;
+      --ff-body: 'Inter', system-ui, sans-serif;
+    }
+    body { font-family: var(--ff-body); background: #f0ece7; color: var(--ink); min-height: 100vh; }
+
+    /* PAGE HEADER */
+    .page-header {
+      background: var(--ink); color: var(--paper);
+      padding: 1.2rem 6vw; display: flex; align-items: center; justify-content: space-between;
+    }
+    .page-header-brand { font-family: var(--ff-display); font-size: 1.2rem; font-weight: 700; }
+    .page-header-sub { font-size: .78rem; color: #b8b3ae; }
+
+    /* PROGRESS */
+    .progress-wrap { background: var(--ink); padding: 0 6vw 1.5rem; }
+    .progress-steps { display: flex; gap: 0; max-width: 700px; margin: 0 auto; }
+    .pstep { flex: 1; text-align: center; position: relative; }
+    .pstep::after {
+      content: ''; position: absolute; top: 14px; left: 50%; width: 100%; height: 2px;
+      background: #3a3530; z-index: 0;
+    }
+    .pstep:last-child::after { display: none; }
+    .pstep-dot {
+      width: 28px; height: 28px; border-radius: 50%; border: 2px solid #3a3530;
+      background: var(--ink); display: inline-flex; align-items: center; justify-content: center;
+      font-size: .7rem; font-weight: 700; color: #8a8580; position: relative; z-index: 1;
+      transition: all .3s;
+    }
+    .pstep.done .pstep-dot { background: var(--green); border-color: var(--green); color: #fff; }
+    .pstep.active .pstep-dot { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .pstep-label { font-size: .65rem; color: #7a7570; margin-top: .3rem; text-transform: uppercase; letter-spacing: .08em; }
+    .pstep.active .pstep-label { color: var(--accent); }
+    .pstep.done .pstep-label { color: var(--green); }
+
+    /* MAIN CARD */
+    .main-wrap { max-width: 700px; margin: 2rem auto; padding: 0 4vw 4rem; }
+    .form-card {
+      background: var(--paper); border-radius: 4px;
+      box-shadow: 0 4px 40px rgba(0,0,0,.1);
+      overflow: hidden;
+    }
+    .card-title-bar {
+      background: var(--accent); padding: 1.4rem 2rem;
+    }
+    .card-title-bar h2 { font-family: var(--ff-display); font-size: 1.3rem; color: #fff; font-weight: 700; }
+    .card-title-bar p { font-size: .8rem; color: rgba(255,255,255,.8); margin-top: .2rem; }
+
+    /* FORM */
+    .form-body { padding: 2rem 2.5rem; }
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+
+    .field { margin-bottom: 1.4rem; }
+    label { display: block; font-size: .8rem; font-weight: 600; margin-bottom: .4rem; color: var(--ink); letter-spacing: .02em; }
+    label span.req { color: var(--accent); }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 500px) { .field-row { grid-template-columns: 1fr; } .form-body { padding: 1.5rem; } }
+
+    input[type=text], input[type=email], input[type=tel], input[type=date],
+    input[type=number], select, textarea {
+      width: 100%; padding: .65rem .9rem; font-size: .875rem; font-family: var(--ff-body);
+      border: 1.5px solid var(--rule); border-radius: 3px; background: #fff;
+      color: var(--ink); outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(200,75,49,.12);
+    }
+    input.invalid, select.invalid, textarea.invalid {
+      border-color: var(--err); box-shadow: 0 0 0 3px rgba(185,28,28,.1);
+    }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .field-hint { font-size: .72rem; color: var(--muted); margin-top: .3rem; }
+    .field-error { font-size: .72rem; color: var(--err); margin-top: .3rem; display: none; }
+
+    .radio-group, .check-group { display: flex; flex-wrap: wrap; gap: .6rem; }
+    .radio-label, .check-label {
+      display: inline-flex; align-items: center; gap: .4rem; cursor: pointer;
+      font-size: .85rem; padding: .4rem .9rem; border: 1.5px solid var(--rule);
+      border-radius: 99px; transition: all .2s;
+    }
+    .radio-label:has(input:checked), .check-label:has(input:checked) {
+      border-color: var(--accent); background: rgba(200,75,49,.07); color: var(--accent); font-weight: 600;
+    }
+    input[type=radio], input[type=checkbox] { accent-color: var(--accent); }
+
+    /* NAVIGATION BUTTONS */
+    .btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); }
+    .btn { padding: .65rem 1.6rem; font-size: .875rem; font-weight: 600; border: none; border-radius: 3px; cursor: pointer; transition: all .2s; font-family: var(--ff-body); }
+    .btn-prev { background: transparent; border: 1.5px solid var(--rule); color: var(--muted); }
+    .btn-prev:hover { border-color: var(--ink); color: var(--ink); }
+    .btn-next { background: var(--accent); color: #fff; }
+    .btn-next:hover { background: #a83b24; }
+    .btn-submit { background: var(--green); color: #fff; font-size: .95rem; padding: .7rem 2rem; }
+    .btn-submit:hover { background: #236040; }
+
+    /* ===== SUCCESS DISPLAY (simulates PHP echo) ===== */
+    #successPage { display: none; padding: 2.5rem; }
+    .success-header {
+      text-align: center; padding: 1.5rem; background: var(--green);
+      margin: -2.5rem -2.5rem 2rem; color: #fff;
+    }
+    .success-header h2 { font-family: var(--ff-display); font-size: 1.6rem; font-weight: 900; }
+    .success-header p { font-size: .875rem; opacity: .9; margin-top: .3rem; }
+    .success-ref {
+      text-align: center; background: #f0fdf4; border: 1.5px solid #86efac;
+      border-radius: 3px; padding: 1rem; margin-bottom: 2rem; font-size: .85rem; color: var(--green);
+    }
+    .success-ref strong { font-size: 1.1rem; display: block; }
+
+    .submitted-section { margin-bottom: 1.8rem; }
+    .sub-title {
+      font-size: .68rem; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--accent); font-weight: 700; border-bottom: 1px solid var(--rule);
+      padding-bottom: .4rem; margin-bottom: 1rem;
+    }
+    .sub-grid { display: grid; grid-template-columns: 160px 1fr; gap: .5rem 0; }
+    .sub-key { font-size: .82rem; font-weight: 600; color: var(--ink); }
+    .sub-val { font-size: .82rem; color: #444; }
+
+    .print-bar { display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap; }
+    .btn-print { background: var(--ink); color: var(--paper); padding: .6rem 1.4rem; font-size: .82rem; font-weight: 600; border: none; border-radius: 2px; cursor: pointer; }
+    .btn-new { background: transparent; border: 1.5px solid var(--rule); color: var(--muted); padding: .6rem 1.4rem; font-size: .82rem; font-weight: 600; cursor: pointer; border-radius: 2px; }
+    .btn-new:hover { border-color: var(--ink); color: var(--ink); }
+
+    @media print {
+      body { background: #fff; }
+      .page-header, .progress-wrap, .btn-row, .print-bar { display: none !important; }
+      .form-card { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div>
+    <div class="page-header-brand">Online Application Portal</div>
+    <div class="page-header-sub">Secure · Instant Confirmation</div>
+  </div>
+  <div style="font-size:.78rem;color:#b8b3ae;">📅 <span id="todayDate"></span></div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="pstep active" id="pstep1">
+      <div class="pstep-dot">1</div>
+      <div class="pstep-label">Personal</div>
+    </div>
+    <div class="pstep" id="pstep2">
+      <div class="pstep-dot">2</div>
+      <div class="pstep-label">Education</div>
+    </div>
+    <div class="pstep" id="pstep3">
+      <div class="pstep-dot">3</div>
+      <div class="pstep-label">Preferences</div>
+    </div>
+    <div class="pstep" id="pstep4">
+      <div class="pstep-dot">✓</div>
+      <div class="pstep-label">Review</div>
+    </div>
+  </div>
+</div>
+
+<div class="main-wrap">
+  <div class="form-card" id="formCard">
+
+    <!-- STEP 1: Personal Info -->
+    <div id="step1" class="step-panel active">
+      <div class="card-title-bar">
+        <h2>Personal Information</h2>
+        <p>Step 1 of 3 — Basic details</p>
+      </div>
+      <div class="form-body">
+        <div class="field-row">
+          <div class="field">
+            <label>First Name <span class="req">*</span></label>
+            <input type="text" id="firstName" placeholder="e.g. Alex">
+            <div class="field-error" id="err-firstName">First name is required.</div>
+          </div>
+          <div class="field">
+            <label>Last Name <span class="req">*</span></label>
+            <input type="text" id="lastName" placeholder="e.g. Morgan">
+            <div class="field-error" id="err-lastName">Last name is required.</div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Date of Birth <span class="req">*</span></label>
+            <input type="date" id="dob">
+            <div class="field-error" id="err-dob">Date of birth is required.</div>
+          </div>
+          <div class="field">
+            <label>Gender <span class="req">*</span></label>
+            <select id="gender">
+              <option value="">— Select —</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Non-binary</option>
+              <option>Prefer not to say</option>
+            </select>
+            <div class="field-error" id="err-gender">Please select gender.</div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Email Address <span class="req">*</span></label>
+            <input type="email" id="email" placeholder="you@example.com">
+            <div class="field-error" id="err-email">Valid email required.</div>
+          </div>
+          <div class="field">
+            <label>Phone Number <span class="req">*</span></label>
+            <input type="tel" id="phone" placeholder="+91 98765 43210">
+            <div class="field-error" id="err-phone">Phone number is required.</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Current Address <span class="req">*</span></label>
+          <textarea id="address" placeholder="House No., Street, City, State – PIN"></textarea>
+          <div class="field-error" id="err-address">Address is required.</div>
+        </div>
+        <div class="btn-row">
+          <span></span>
+          <button class="btn btn-next" id="next1">Continue →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Education -->
+    <div id="step2" class="step-panel">
+      <div class="card-title-bar">
+        <h2>Educational Background</h2>
+        <p>Step 2 of 3 — Academic qualifications</p>
+      </div>
+      <div class="form-body">
+        <div class="field-row">
+          <div class="field">
+            <label>Highest Qualification <span class="req">*</span></label>
+            <select id="qualification">
+              <option value="">— Select —</option>
+              <option>SSLC / 10th</option>
+              <option>PUC / 12th</option>
+              <option>Diploma</option>
+              <option>B.E. / B.Tech</option>
+              <option>B.Sc</option>
+              <option>B.Com / BBA</option>
+              <option>M.Tech / M.E.</option>
+              <option>MBA</option>
+              <option>Ph.D</option>
+              <option>Other</option>
+            </select>
+            <div class="field-error" id="err-qualification">Please select qualification.</div>
+          </div>
+          <div class="field">
+            <label>Field / Specialisation <span class="req">*</span></label>
+            <input type="text" id="specialisation" placeholder="e.g. Computer Science">
+            <div class="field-error" id="err-specialisation">Specialisation is required.</div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Institution Name <span class="req">*</span></label>
+            <input type="text" id="institution" placeholder="e.g. SJCE Mysuru">
+            <div class="field-error" id="err-institution">Institution name is required.</div>
+          </div>
+          <div class="field">
+            <label>Year of Passing <span class="req">*</span></label>
+            <input type="number" id="yearOfPassing" placeholder="e.g. 2022" min="1990" max="2030">
+            <div class="field-error" id="err-yearOfPassing">Year of passing is required.</div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Percentage / CGPA</label>
+            <input type="text" id="percentage" placeholder="e.g. 85% or 8.5 CGPA">
+          </div>
+          <div class="field">
+            <label>Work Experience</label>
+            <select id="experience">
+              <option value="">— Select —</option>
+              <option>Fresher (0 years)</option>
+              <option>Less than 1 year</option>
+              <option>1 – 2 years</option>
+              <option>2 – 4 years</option>
+              <option>4 – 6 years</option>
+              <option>6+ years</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-prev" id="prev2">← Back</button>
+          <button class="btn btn-next" id="next2">Continue →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Preferences -->
+    <div id="step3" class="step-panel">
+      <div class="card-title-bar">
+        <h2>Application Preferences</h2>
+        <p>Step 3 of 3 — Role &amp; availability</p>
+      </div>
+      <div class="form-body">
+        <div class="field">
+          <label>Position Applied For <span class="req">*</span></label>
+          <select id="position">
+            <option value="">— Select —</option>
+            <option>Frontend Developer</option>
+            <option>Backend Developer</option>
+            <option>Full-Stack Developer</option>
+            <option>UI/UX Designer</option>
+            <option>Data Analyst</option>
+            <option>Project Manager</option>
+            <option>QA Engineer</option>
+            <option>DevOps Engineer</option>
+          </select>
+          <div class="field-error" id="err-position">Please select a position.</div>
+        </div>
+        <div class="field">
+          <label>Employment Type <span class="req">*</span></label>
+          <div class="radio-group" id="empTypeGroup">
+            <label class="radio-label"><input type="radio" name="empType" value="Full-time"> Full-time</label>
+            <label class="radio-label"><input type="radio" name="empType" value="Part-time"> Part-time</label>
+            <label class="radio-label"><input type="radio" name="empType" value="Contract"> Contract</label>
+            <label class="radio-label"><input type="radio" name="empType" value="Internship"> Internship</label>
+            <label class="radio-label"><input type="radio" name="empType" value="Remote"> Remote</label>
+          </div>
+          <div class="field-error" id="err-empType">Please select employment type.</div>
+        </div>
+        <div class="field">
+          <label>Skills (select all that apply)</label>
+          <div class="check-group">
+            <label class="check-label"><input type="checkbox" name="skills" value="HTML/CSS"> HTML/CSS</label>
+            <label class="check-label"><input type="checkbox" name="skills" value="JavaScript"> JavaScript</label>
+            <label class="check-label"><input type="checkbox" name="skills" value="jQuery"> jQuery</label>
+            <label class="check-label"><input type="checkbox" name="skills" value="PHP"> PHP</label>
+            <label class="check-label"><input type="checkbox" name="skills" value="MySQL"> MySQL</label>
+            <label class="check-label"><input type="checkbox" name="skills" value="React"> React</label>
+            <label class="check-label"><input type="checkbox" name="skills" value="Python"> Python</label>
+            <label class="check-label"><input type="checkbox" name="skills" value="Node.js"> Node.js</label>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Expected Salary (₹ LPA)</label>
+            <input type="text" id="salary" placeholder="e.g. 8–10">
+          </div>
+          <div class="field">
+            <label>Available to Join</label>
+            <input type="date" id="joinDate">
+          </div>
+        </div>
+        <div class="field">
+          <label>Cover Note / Message</label>
+          <textarea id="coverNote" placeholder="Brief note about yourself or why you're applying…" style="min-height:90px;"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-prev" id="prev3">← Back</button>
+          <button class="btn btn-submit" id="submitBtn">Submit Application ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS PAGE (simulates PHP print/display on browser) -->
+    <div id="successPage">
+      <div class="success-header">
+        <h2>✅ Application Submitted!</h2>
+        <p>Your application has been received successfully.</p>
+      </div>
+
+      <div class="success-ref">
+        Application Reference No.: <strong id="refNo"></strong>
+        <span style="font-size:.75rem;display:block;margin-top:.2rem;">Save this number for future reference.</span>
+      </div>
+
+      <!-- PHP-style: display submitted data formatted on browser -->
+      <div id="submittedData">
+
+        <div class="submitted-section">
+          <div class="sub-title">Personal Details</div>
+          <div class="sub-grid">
+            <div class="sub-key">Full Name</div>       <div class="sub-val" id="s-name"></div>
+            <div class="sub-key">Date of Birth</div>   <div class="sub-val" id="s-dob"></div>
+            <div class="sub-key">Gender</div>          <div class="sub-val" id="s-gender"></div>
+            <div class="sub-key">Email</div>           <div class="sub-val" id="s-email"></div>
+            <div class="sub-key">Phone</div>           <div class="sub-val" id="s-phone"></div>
+            <div class="sub-key">Address</div>         <div class="sub-val" id="s-address"></div>
+          </div>
+        </div>
+
+        <div class="submitted-section">
+          <div class="sub-title">Educational Background</div>
+          <div class="sub-grid">
+            <div class="sub-key">Qualification</div>   <div class="sub-val" id="s-qual"></div>
+            <div class="sub-key">Specialisation</div>  <div class="sub-val" id="s-spec"></div>
+            <div class="sub-key">Institution</div>     <div class="sub-val" id="s-inst"></div>
+            <div class="sub-key">Year of Passing</div> <div class="sub-val" id="s-year"></div>
+            <div class="sub-key">Percentage/CGPA</div> <div class="sub-val" id="s-pct"></div>
+            <div class="sub-key">Experience</div>      <div class="sub-val" id="s-exp"></div>
+          </div>
+        </div>
+
+        <div class="submitted-section">
+          <div class="sub-title">Application Preferences</div>
+          <div class="sub-grid">
+            <div class="sub-key">Position</div>        <div class="sub-val" id="s-position"></div>
+            <div class="sub-key">Employment Type</div> <div class="sub-val" id="s-emptype"></div>
+            <div class="sub-key">Skills</div>          <div class="sub-val" id="s-skills"></div>
+            <div class="sub-key">Expected Salary</div> <div class="sub-val" id="s-salary"></div>
+            <div class="sub-key">Available From</div>  <div class="sub-val" id="s-joindate"></div>
+            <div class="sub-key">Cover Note</div>      <div class="sub-val" id="s-cover"></div>
+          </div>
+        </div>
+
+        <div class="submitted-section" style="margin-bottom:0;padding-bottom:0;border:none;">
+          <div class="sub-title">Submission Timestamp</div>
+          <div class="sub-grid">
+            <div class="sub-key">Submitted On</div>    <div class="sub-val" id="s-timestamp"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="print-bar">
+        <button class="btn-print" onclick="window.print()">🖨 Print This Page</button>
+        <button class="btn-new" onclick="resetForm()">Submit Another Application</button>
+      </div>
+    </div>
+
+  </div><!-- /form-card -->
+</div>
+
+<script>
+$(document).ready(function () {
+
+  // Today's date in header
+  const now = new Date();
+  $('#todayDate').text(now.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }));
+
+  let currentStep = 1;
+
+  function showStep(n) {
+    $('.step-panel').removeClass('active');
+    $('#step' + n).addClass('active');
+    // update progress
+    for (let i = 1; i <= 4; i++) {
+      const p = $('#pstep' + i);
+      p.removeClass('active done');
+      if (i < n) p.addClass('done');
+      else if (i === n) p.addClass('active');
+    }
+    currentStep = n;
+  }
+
+  function validate(step) {
+    let ok = true;
+    function req(id, errId, check) {
+      const val = check ? check() : $('#' + id).val().trim();
+      if (!val) {
+        $('#' + id).addClass('invalid');
+        $('#err-' + errId).show();
+        ok = false;
+      } else {
+        $('#' + id).removeClass('invalid');
+        $('#err-' + errId).hide();
+      }
+    }
+    if (step === 1) {
+      req('firstName', 'firstName');
+      req('lastName', 'lastName');
+      req('dob', 'dob');
+      req('gender', 'gender');
+      req('email', 'email', () => {
+        const v = $('#email').val().trim();
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? v : '';
+      });
+      req('phone', 'phone');
+      req('address', 'address');
+    }
+    if (step === 2) {
+      req('qualification', 'qualification');
+      req('specialisation', 'specialisation');
+      req('institution', 'institution');
+      req('yearOfPassing', 'yearOfPassing');
+    }
+    if (step === 3) {
+      req('position', 'position');
+      const empType = $('input[name=empType]:checked').val();
+      if (!empType) {
+        $('#err-empType').show(); ok = false;
+      } else {
+        $('#err-empType').hide();
+      }
+    }
+    return ok;
+  }
+
+  // Clear invalid state on input
+  $('input, select, textarea').on('input change', function () {
+    $(this).removeClass('invalid');
+  });
+
+  $('#next1').click(function () { if (validate(1)) showStep(2); });
+  $('#prev2').click(function () { showStep(1); });
+  $('#next2').click(function () { if (validate(2)) showStep(3); });
+  $('#prev3').click(function () { showStep(2); });
+
+  $('#submitBtn').click(function () {
+    if (!validate(3)) return;
+
+    // Collect skills
+    const skills = [];
+    $('input[name=skills]:checked').each(function () { skills.push($(this).val()); });
+
+    // Generate ref no.
+    const ref = 'APP-' + now.getFullYear() + '-' + String(Math.floor(Math.random() * 90000) + 10000);
+    $('#refNo').text(ref);
+
+    // Populate success page (simulating PHP echo)
+    $('#s-name').text($('#firstName').val().trim() + ' ' + $('#lastName').val().trim());
+    $('#s-dob').text($('#dob').val());
+    $('#s-gender').text($('#gender').val());
+    $('#s-email').text($('#email').val().trim());
+    $('#s-phone').text($('#phone').val().trim());
+    $('#s-address').text($('#address').val().trim());
+
+    $('#s-qual').text($('#qualification').val());
+    $('#s-spec').text($('#specialisation').val().trim());
+    $('#s-inst').text($('#institution').val().trim());
+    $('#s-year').text($('#yearOfPassing').val());
+    $('#s-pct').text($('#percentage').val().trim() || '—');
+    $('#s-exp').text($('#experience').val() || '—');
+
+    $('#s-position').text($('#position').val());
+    $('#s-emptype').text($('input[name=empType]:checked').val());
+    $('#s-skills').text(skills.length ? skills.join(', ') : '—');
+    $('#s-salary').text($('#salary').val().trim() ? '₹ ' + $('#salary').val().trim() + ' LPA' : '—');
+    $('#s-joindate').text($('#joinDate').val() || '—');
+    $('#s-cover').text($('#coverNote').val().trim() || '—');
+    $('#s-timestamp').text(now.toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'medium' }));
+
+    // Hide form steps, show success
+    $('.step-panel').hide();
+    $('#successPage').fadeIn(400);
+
+    // Update progress to step 4
+    for (let i = 1; i <= 3; i++) $('#pstep' + i).removeClass('active').addClass('done');
+    $('#pstep4').addClass('active');
+  });
+});
+
+function resetForm() {
+  location.reload();
+}
+</script>
+</body>
+</html>

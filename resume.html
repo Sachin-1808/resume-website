@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume — Alex Morgan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #0f0e0d; --paper: #faf8f5; --accent: #c84b31; --muted: #7a7570;
+      --rule: #e2ddd8;
+      --ff-display: 'Playfair Display', Georgia, serif;
+      --ff-body: 'Inter', system-ui, sans-serif;
+    }
+    body { font-family: var(--ff-body); background: var(--paper); color: var(--ink); }
+
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      background: var(--paper); border-bottom: 1px solid var(--rule);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6vw; height: 56px;
+    }
+    .nav-brand { font-family: var(--ff-display); font-weight: 700; font-size: 1.1rem; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { text-decoration: none; font-size: .875rem; font-weight: 500; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; transition: color .2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+
+    .page-wrap { max-width: 900px; margin: 0 auto; padding: 90px 4vw 60px; }
+
+    /* Print / download button */
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem; }
+    .page-eyebrow { font-size: .72rem; color: var(--accent); letter-spacing: .14em; text-transform: uppercase; font-weight: 600; }
+    .page-title { font-family: var(--ff-display); font-size: 2rem; font-weight: 900; }
+    .btn { display: inline-block; padding: .6rem 1.4rem; font-size: .8rem; font-weight: 600; letter-spacing: .04em; text-decoration: none; border-radius: 2px; cursor: pointer; border: none; transition: all .2s; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #a83b24; }
+
+    /* Resume card */
+    .resume-card {
+      border: 1px solid var(--rule); border-radius: 4px; overflow: hidden;
+      box-shadow: 0 4px 30px rgba(0,0,0,.06);
+    }
+    .rc-header {
+      background: var(--ink); color: var(--paper);
+      padding: 2.5rem 3rem; display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;
+    }
+    .rc-avatar {
+      width: 72px; height: 72px; border-radius: 50%; background: var(--accent);
+      display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0;
+    }
+    .rc-name { font-family: var(--ff-display); font-size: 2rem; font-weight: 900; }
+    .rc-role { color: #b8b3ae; font-size: .95rem; margin-top: .2rem; }
+    .rc-contact { display: flex; flex-wrap: wrap; gap: .6rem 1.8rem; margin-top: .8rem; font-size: .8rem; color: #c8c3be; }
+
+    .rc-body { display: grid; grid-template-columns: 1fr 2fr; }
+    @media (max-width: 640px) { .rc-body { grid-template-columns: 1fr; } }
+
+    .rc-sidebar { background: #f4f0eb; border-right: 1px solid var(--rule); padding: 2rem; }
+    .rc-main { padding: 2rem 2.5rem; }
+
+    .rs { margin-bottom: 2rem; }
+    .rs-title {
+      font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+      font-weight: 700; border-bottom: 1px solid var(--rule); padding-bottom: .4rem; margin-bottom: 1rem;
+    }
+    .skill-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: .7rem; font-size: .85rem; }
+    .dots { display: flex; gap: 3px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rule); }
+    .dot.filled { background: var(--accent); }
+
+    .edu-item { margin-bottom: 1.2rem; }
+    .edu-degree { font-weight: 600; font-size: .875rem; }
+    .edu-school { font-size: .8rem; color: var(--muted); }
+    .edu-year { font-size: .72rem; color: var(--accent); font-weight: 600; }
+
+    .cert-item { font-size: .82rem; margin-bottom: .5rem; padding-left: .8rem; position: relative; }
+    .cert-item::before { content: '›'; position: absolute; left: 0; color: var(--accent); }
+
+    .exp-item { margin-bottom: 2rem; }
+    .exp-header { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .3rem; margin-bottom: .3rem; }
+    .exp-title { font-weight: 700; font-size: .95rem; }
+    .exp-date { font-size: .75rem; color: var(--accent); font-weight: 600; }
+    .exp-company { font-size: .85rem; color: var(--muted); margin-bottom: .5rem; }
+    .exp-bullets { padding-left: 1.1rem; }
+    .exp-bullets li { font-size: .855rem; color: #444; margin-bottom: .3rem; }
+
+    .project-item { margin-bottom: 1.2rem; border-left: 2px solid var(--accent); padding-left: .9rem; }
+    .proj-name { font-weight: 600; font-size: .9rem; }
+    .proj-stack { font-size: .74rem; color: var(--accent); margin-bottom: .2rem; }
+    .proj-desc { font-size: .83rem; color: #555; }
+
+    @media print {
+      nav, .top-bar .btn { display: none; }
+      .page-wrap { padding-top: 10px; }
+      .resume-card { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">AM</div>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="resume.html" class="active">Resume</a></li>
+    <li><a href="biodata.html">Bio-data</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrap">
+  <div class="top-bar">
+    <div>
+      <div class="page-eyebrow">Curriculum Vitae</div>
+      <div class="page-title">Resume</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.print()">⬇ Print / Download</button>
+  </div>
+
+  <div class="resume-card">
+    <!-- Header -->
+    <div class="rc-header">
+      <div class="rc-avatar">👤</div>
+      <div>
+        <div class="rc-name">Alex Morgan</div>
+        <div class="rc-role">Full-Stack Web Developer</div>
+        <div class="rc-contact">
+          <span>📧 alex@example.com</span>
+          <span>📞 +91 98765 43210</span>
+          <span>📍 Bangalore, Karnataka</span>
+          <span>🌐 alexmorgan.dev</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="rc-body">
+      <!-- Sidebar -->
+      <aside class="rc-sidebar">
+        <!-- Technical Skills -->
+        <div class="rs">
+          <div class="rs-title">Technical Skills</div>
+          <div class="skill-item">HTML5/CSS3 <div class="dots"><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div></div></div>
+          <div class="skill-item">JavaScript <div class="dots"><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot"></div></div></div>
+          <div class="skill-item">jQuery <div class="dots"><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot"></div></div></div>
+          <div class="skill-item">PHP <div class="dots"><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot"></div></div></div>
+          <div class="skill-item">MySQL <div class="dots"><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot"></div><div class="dot"></div></div></div>
+          <div class="skill-item">React.js <div class="dots"><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot"></div><div class="dot"></div></div></div>
+          <div class="skill-item">Python <div class="dots"><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot"></div><div class="dot"></div></div></div>
+        </div>
+
+        <!-- Education -->
+        <div class="rs">
+          <div class="rs-title">Education</div>
+          <div class="edu-item">
+            <div class="edu-degree">B.E. — Computer Science</div>
+            <div class="edu-school">VTU, SJCE Mysuru</div>
+            <div class="edu-year">2016 – 2020 · CGPA 8.7</div>
+          </div>
+          <div class="edu-item">
+            <div class="edu-degree">PUC (Science)</div>
+            <div class="edu-school">Mahesh PU College, Mysuru</div>
+            <div class="edu-year">2014 – 2016 · 91.2%</div>
+          </div>
+        </div>
+
+        <!-- Certifications -->
+        <div class="rs">
+          <div class="rs-title">Certifications</div>
+          <div class="cert-item">Meta Front-End Developer (Coursera)</div>
+          <div class="cert-item">AWS Cloud Practitioner</div>
+          <div class="cert-item">Google UX Design (Coursera)</div>
+          <div class="cert-item">PHP & MySQL — Udemy</div>
+        </div>
+
+        <!-- Languages -->
+        <div class="rs">
+          <div class="rs-title">Languages</div>
+          <div class="skill-item">English <div class="dots"><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div></div></div>
+          <div class="skill-item">Kannada <div class="dots"><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div></div></div>
+          <div class="skill-item">Hindi <div class="dots"><div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div><div class="dot"></div><div class="dot"></div></div></div>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <main class="rc-main">
+        <!-- Summary -->
+        <div class="rs">
+          <div class="rs-title">Professional Summary</div>
+          <p style="font-size:.875rem;line-height:1.7;color:#444;">
+            Results-driven Full-Stack Web Developer with 4+ years of experience designing, building, and deploying responsive web applications. Proficient in HTML5, CSS3, JavaScript, jQuery, PHP, and MySQL. Passionate about clean code, accessibility, and delivering polished user experiences.
+          </p>
+        </div>
+
+        <!-- Experience -->
+        <div class="rs">
+          <div class="rs-title">Work Experience</div>
+          <div class="exp-item">
+            <div class="exp-header">
+              <span class="exp-title">Senior Frontend Developer</span>
+              <span class="exp-date">Jan 2023 – Present</span>
+            </div>
+            <div class="exp-company">TechNova Solutions · Bangalore, Karnataka</div>
+            <ul class="exp-bullets">
+              <li>Architected and built UI for 3 SaaS products serving 10,000+ users</li>
+              <li>Reduced initial page load time by 40% via code-splitting &amp; lazy loading</li>
+              <li>Mentored 3 junior developers; established code-review process</li>
+              <li>Integrated jQuery-based dynamic dashboards with REST APIs</li>
+            </ul>
+          </div>
+          <div class="exp-item">
+            <div class="exp-header">
+              <span class="exp-title">Web Developer</span>
+              <span class="exp-date">Jun 2021 – Dec 2022</span>
+            </div>
+            <div class="exp-company">DigitalCraft Agency · Mysuru, Karnataka</div>
+            <ul class="exp-bullets">
+              <li>Delivered 15+ client websites with HTML, CSS, JavaScript, jQuery, and PHP</li>
+              <li>Built custom CMS solutions and contact-form backends in PHP/MySQL</li>
+              <li>Maintained 99.9% uptime across all hosted projects</li>
+            </ul>
+          </div>
+          <div class="exp-item">
+            <div class="exp-header">
+              <span class="exp-title">Junior Developer (Intern → Full-time)</span>
+              <span class="exp-date">Jul 2020 – May 2021</span>
+            </div>
+            <div class="exp-company">StartUp Hub · Remote</div>
+            <ul class="exp-bullets">
+              <li>Developed 8 responsive landing pages; integrated Razorpay &amp; Stripe</li>
+              <li>Wrote PHP scripts for order management and email notifications</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Projects -->
+        <div class="rs">
+          <div class="rs-title">Key Projects</div>
+          <div class="project-item">
+            <div class="proj-name">E-Commerce Platform</div>
+            <div class="proj-stack">HTML · CSS · jQuery · PHP · MySQL</div>
+            <div class="proj-desc">Full-featured store with cart, checkout, and admin dashboard for 500+ SKUs.</div>
+          </div>
+          <div class="project-item">
+            <div class="proj-name">Student Portal</div>
+            <div class="proj-stack">HTML · CSS · JavaScript · PHP</div>
+            <div class="proj-desc">University portal handling enrolment, timetables, and grade reports for 2,000 students.</div>
+          </div>
+          <div class="project-item">
+            <div class="proj-name">Task Management App</div>
+            <div class="proj-stack">React.js · CSS Modules · REST API</div>
+            <div class="proj-desc">Kanban-style task tracker with real-time updates and team collaboration.</div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script>
+$(document).ready(function () {
+  // Highlight active nav
+  $('nav a').each(function() {
+    if ($(this).attr('href') === 'resume.html') $(this).addClass('active');
+  });
+});
+</script>
+</body>
+</html>

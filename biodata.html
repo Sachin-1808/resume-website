@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bio-data — Alex Morgan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #0f0e0d; --paper: #faf8f5; --accent: #c84b31; --muted: #7a7570;
+      --rule: #e2ddd8;
+      --ff-display: 'Playfair Display', Georgia, serif;
+      --ff-body: 'Inter', system-ui, sans-serif;
+    }
+    body { font-family: var(--ff-body); background: var(--paper); color: var(--ink); }
+
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      background: var(--paper); border-bottom: 1px solid var(--rule);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6vw; height: 56px;
+    }
+    .nav-brand { font-family: var(--ff-display); font-weight: 700; font-size: 1.1rem; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { text-decoration: none; font-size: .875rem; font-weight: 500; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; transition: color .2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+
+    .page-wrap { max-width: 820px; margin: 0 auto; padding: 90px 4vw 60px; }
+
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem; }
+    .page-eyebrow { font-size: .72rem; color: var(--accent); letter-spacing: .14em; text-transform: uppercase; font-weight: 600; }
+    .page-title { font-family: var(--ff-display); font-size: 2rem; font-weight: 900; }
+    .btn { display: inline-block; padding: .6rem 1.4rem; font-size: .8rem; font-weight: 600; letter-spacing: .04em; text-decoration: none; border-radius: 2px; cursor: pointer; border: none; transition: all .2s; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #a83b24; }
+
+    /* Bio-data Card */
+    .bio-card {
+      border: 1px solid var(--rule); border-radius: 4px;
+      box-shadow: 0 4px 30px rgba(0,0,0,.06); overflow: hidden;
+    }
+
+    /* Top photo + name band */
+    .bio-top {
+      background: var(--ink); padding: 2.5rem 3rem;
+      display: flex; gap: 2.5rem; align-items: center; flex-wrap: wrap;
+    }
+    .bio-avatar {
+      width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--accent);
+      background: #2a2520; display: flex; align-items: center; justify-content: center;
+      font-size: 2.8rem; flex-shrink: 0;
+    }
+    .bio-name-block h1 { font-family: var(--ff-display); font-size: 1.8rem; color: #faf8f5; font-weight: 900; }
+    .bio-name-block p { color: #b8b3ae; font-size: .9rem; margin-top: .3rem; }
+    .bio-badges { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .7rem; }
+    .badge { background: rgba(200,75,49,.2); color: #e87a60; font-size: .7rem; padding: .25rem .7rem; border-radius: 99px; font-weight: 600; letter-spacing: .05em; }
+
+    /* Sections */
+    .bio-body { padding: 2.5rem 3rem; }
+    .bio-section { margin-bottom: 2.2rem; border-bottom: 1px solid var(--rule); padding-bottom: 2.2rem; }
+    .bio-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .bio-section-title {
+      font-size: .68rem; letter-spacing: .15em; text-transform: uppercase; color: var(--accent);
+      font-weight: 700; margin-bottom: 1rem;
+    }
+
+    /* Key-value table */
+    .kv-grid { display: grid; grid-template-columns: 160px 1fr; gap: .55rem 0; }
+    .kv-key { font-size: .85rem; font-weight: 600; color: var(--ink); padding-right: 1rem; }
+    .kv-val { font-size: .85rem; color: #444; }
+    .kv-val a { color: var(--accent); text-decoration: none; }
+    .kv-val a:hover { text-decoration: underline; }
+
+    /* Hobbies */
+    .hobby-tags { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .hobby-tag {
+      background: #f0ece7; border: 1px solid var(--rule); padding: .35rem .9rem;
+      border-radius: 99px; font-size: .8rem; color: var(--ink); font-weight: 500;
+      transition: all .2s; cursor: default;
+    }
+    .hobby-tag:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* References */
+    .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 560px) { .ref-grid { grid-template-columns: 1fr; } .kv-grid { grid-template-columns: 1fr; } .bio-body { padding: 1.5rem; } .bio-top { padding: 1.5rem; } }
+    .ref-card { border: 1px solid var(--rule); border-radius: 3px; padding: 1rem 1.2rem; }
+    .ref-name { font-weight: 700; font-size: .9rem; }
+    .ref-role { font-size: .8rem; color: var(--muted); }
+    .ref-contact { font-size: .78rem; color: var(--accent); margin-top: .3rem; }
+
+    /* Declaration */
+    .declaration {
+      background: #f4f0eb; border-radius: 3px; padding: 1.2rem 1.5rem;
+      font-size: .82rem; color: #555; line-height: 1.7; font-style: italic;
+      border-left: 3px solid var(--accent);
+    }
+
+    @media print {
+      nav, .top-bar .btn { display: none; }
+      .page-wrap { padding-top: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">AM</div>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="resume.html">Resume</a></li>
+    <li><a href="biodata.html" class="active">Bio-data</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrap">
+  <div class="top-bar">
+    <div>
+      <div class="page-eyebrow">Personal Profile</div>
+      <div class="page-title">Bio-data</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.print()">⬇ Print / Save</button>
+  </div>
+
+  <div class="bio-card">
+    <!-- Top -->
+    <div class="bio-top">
+      <div class="bio-avatar">👤</div>
+      <div class="bio-name-block">
+        <h1>Alex Morgan</h1>
+        <p>Full-Stack Web Developer · Bangalore, Karnataka</p>
+        <div class="bio-badges">
+          <span class="badge">Available for hire</span>
+          <span class="badge">4+ Years Exp.</span>
+          <span class="badge">Open to Relocation</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bio-body">
+
+      <!-- Personal Details -->
+      <div class="bio-section">
+        <div class="bio-section-title">Personal Details</div>
+        <div class="kv-grid">
+          <div class="kv-key">Full Name</div>          <div class="kv-val">Alex Morgan</div>
+          <div class="kv-key">Date of Birth</div>      <div class="kv-val">15 March 1998</div>
+          <div class="kv-key">Age</div>                <div class="kv-val">28 years</div>
+          <div class="kv-key">Gender</div>             <div class="kv-val">Male</div>
+          <div class="kv-key">Nationality</div>        <div class="kv-val">Indian</div>
+          <div class="kv-key">Religion</div>           <div class="kv-val">Hindu</div>
+          <div class="kv-key">Marital Status</div>     <div class="kv-val">Single</div>
+          <div class="kv-key">Blood Group</div>        <div class="kv-val">O+</div>
+        </div>
+      </div>
+
+      <!-- Contact Information -->
+      <div class="bio-section">
+        <div class="bio-section-title">Contact Information</div>
+        <div class="kv-grid">
+          <div class="kv-key">Mobile</div>             <div class="kv-val">+91 98765 43210</div>
+          <div class="kv-key">Email</div>              <div class="kv-val"><a href="mailto:alex@example.com">alex@example.com</a></div>
+          <div class="kv-key">LinkedIn</div>           <div class="kv-val"><a href="#">linkedin.com/in/alexmorgan</a></div>
+          <div class="kv-key">GitHub</div>             <div class="kv-val"><a href="#">github.com/alexmorgan</a></div>
+          <div class="kv-key">Website</div>            <div class="kv-val"><a href="#">alexmorgan.dev</a></div>
+          <div class="kv-key">Current Address</div>    <div class="kv-val">No. 42, 3rd Cross, Indiranagar, Bangalore – 560 038</div>
+          <div class="kv-key">Permanent Address</div>  <div class="kv-val">No. 7, Gandhi Nagar, Mysuru – 570 010</div>
+        </div>
+      </div>
+
+      <!-- Education -->
+      <div class="bio-section">
+        <div class="bio-section-title">Educational Qualifications</div>
+        <div class="kv-grid">
+          <div class="kv-key">B.E. CSE</div>          <div class="kv-val">SJCE Mysuru, VTU — 2020 · CGPA 8.7/10</div>
+          <div class="kv-key">PUC (Science)</div>      <div class="kv-val">Mahesh PU College, Mysuru — 2016 · 91.2%</div>
+          <div class="kv-key">SSLC</div>               <div class="kv-val">St. Joseph's High School, Mysuru — 2014 · 94.4%</div>
+        </div>
+      </div>
+
+      <!-- Professional Details -->
+      <div class="bio-section">
+        <div class="bio-section-title">Professional Details</div>
+        <div class="kv-grid">
+          <div class="kv-key">Current Role</div>       <div class="kv-val">Senior Frontend Developer, TechNova Solutions</div>
+          <div class="kv-key">Experience</div>          <div class="kv-val">4 years 6 months</div>
+          <div class="kv-key">Notice Period</div>      <div class="kv-val">30 days</div>
+          <div class="kv-key">Current CTC</div>        <div class="kv-val">₹ 8.5 LPA</div>
+          <div class="kv-key">Expected CTC</div>       <div class="kv-val">₹ 12–14 LPA</div>
+          <div class="kv-key">Preferred Location</div> <div class="kv-val">Bangalore / Mysuru / Remote</div>
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div class="bio-section">
+        <div class="bio-section-title">Technical Skills</div>
+        <div class="kv-grid">
+          <div class="kv-key">Languages</div>          <div class="kv-val">HTML5, CSS3, JavaScript, PHP, Python, SQL</div>
+          <div class="kv-key">Frameworks / Libs</div>  <div class="kv-val">jQuery, React.js, Bootstrap, Tailwind CSS</div>
+          <div class="kv-key">Databases</div>          <div class="kv-val">MySQL, SQLite, MongoDB (basic)</div>
+          <div class="kv-key">Tools</div>              <div class="kv-val">Git, VS Code, Figma, Postman, LAMP/WAMP</div>
+          <div class="kv-key">Cloud</div>              <div class="kv-val">AWS (EC2, S3), Netlify, Vercel, cPanel</div>
+        </div>
+      </div>
+
+      <!-- Hobbies -->
+      <div class="bio-section">
+        <div class="bio-section-title">Hobbies &amp; Interests</div>
+        <div class="hobby-tags">
+          <span class="hobby-tag">Open Source Contribution</span>
+          <span class="hobby-tag">UI Design</span>
+          <span class="hobby-tag">Photography</span>
+          <span class="hobby-tag">Chess</span>
+          <span class="hobby-tag">Cycling</span>
+          <span class="hobby-tag">Cooking</span>
+          <span class="hobby-tag">Reading Tech Blogs</span>
+        </div>
+      </div>
+
+      <!-- References -->
+      <div class="bio-section">
+        <div class="bio-section-title">References</div>
+        <div class="ref-grid">
+          <div class="ref-card">
+            <div class="ref-name">Dr. Rajesh Kumar</div>
+            <div class="ref-role">Professor, SJCE Mysuru</div>
+            <div class="ref-contact">rajesh.k@sjce.ac.in · +91 94800 00001</div>
+          </div>
+          <div class="ref-card">
+            <div class="ref-name">Priya Sharma</div>
+            <div class="ref-role">Tech Lead, TechNova Solutions</div>
+            <div class="ref-contact">priya.s@technova.io · +91 99000 00002</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Declaration -->
+      <div class="bio-section">
+        <div class="bio-section-title">Declaration</div>
+        <div class="declaration">
+          I hereby declare that all information furnished above is true and correct to the best of my knowledge and belief.
+          <br><br>
+          <strong>Date:</strong> 10 June 2026 &nbsp;&nbsp; <strong>Place:</strong> Bangalore
+          <br><br>
+          <strong>(Alex Morgan)</strong>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+$(document).ready(function () {
+  // Animated fade-in on sections
+  $('.bio-section').each(function (i) {
+    $(this).css({ opacity: 0, transform: 'translateY(16px)' });
+    setTimeout(() => {
+      $(this).animate({ opacity: 1 }, 400);
+      $(this).css('transform', 'translateY(0)');
+    }, 100 + i * 60);
+  });
+});
+</script>
+</body>
+</html>
